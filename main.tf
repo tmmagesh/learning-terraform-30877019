@@ -1,3 +1,18 @@
+provider "aws" {
+  region = "us-east-1"
+}
+
+resource "aws_instance" "blog" {
+  ami           = "ami-0c55b159cbfafe1f0"
+  instance_type = var.instance_type
+
+  tags = {
+    Name = "MyBlogInstance"
+  }
+}
+
+
+
 data "aws_ami" "app_ami" {
   most_recent = true
 
