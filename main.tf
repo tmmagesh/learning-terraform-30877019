@@ -1,18 +1,12 @@
-//Keeping this in main.tf only removed from other places/files
 provider "aws" {
   region = "us-east-1"
 }
 
-resource "aws_instance" "blog" {
-  ami           = "ami-0c55b159cbfafe1f0"
-  instance_type = var.instance_type
-
-  tags = {
-    Name = "MyBlogInstance"
-  }
+variable "instance_type" {
+  description = "Type of EC2 instance to launch"
+  type        = string
+  default     = "t3.micro"
 }
-
-
 
 data "aws_ami" "app_ami" {
   most_recent = true
@@ -34,26 +28,24 @@ data "aws_vpc" "default" {
   default = true
 }
 
+module "blog_sg" {
+  source  = "terraform-aws-modules/security-group/aws"
+  version = "4.13.0"
+
+  vpc_id              = data.aws_vpc.default.id
+  name                = "blog"
+  ingress_rules       = ["https-443-tcp", "http-80-tcp"]
+  ingress_cidr_blocks = ["0.0.0.0/0"]
+  egress_rules        = ["all-all"]
+  egress_cidr_blocks  = ["0.0.0.0/0"]
+}
+
 resource "aws_instance" "blog" {
   ami                    = data.aws_ami.app_ami.id
   instance_type          = var.instance_type
   vpc_security_group_ids = [module.blog_sg.security_group_id]
 
-
   tags = {
     Name = "Learning Terraform"
   }
 }
-
-module "blog_sg" {
-  source  = "terraform-aws-modules/security-group/aws"
-  version = "4.13.0"
-
-  vpc_id  = data.aws_vpc.default.id
-  name    = "blog"
-  ingress_rules = ["https-443-tcp","http-80-tcp"]
-  ingress_cidr_blocks = ["0.0.0.0/0"]
-  egress_rules = ["all-all"]
-  egress_cidr_blocks = ["0.0.0.0/0"]
-}
-
