@@ -1,3 +1,4 @@
+//Keeping this in main.tf only removed from other places/files
 provider "aws" {
   region = "us-east-1"
 }
